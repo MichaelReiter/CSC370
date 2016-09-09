@@ -1,7 +1,7 @@
 # CSC370
 Coursework from CSC 370 (Fall 2016) at UVic.
 
-The use and operating principles of database management systems.
+This course focused on the use and operating principles of database management systems.
 Some topics covered included
 - Data entities and relationships
 - Data modelling using Entity-Relation Diagrams: hierarchical, network and relational models of databases
