@@ -1,0 +1,7 @@
+1.
+
+select id, year from productions where attr is NULL and title ~ 'Harry Potter' and year > 2011;
+
+2.
+
+select id, character from roles where pid ~ 'Streep, Meryl' and id in (select id from productions where attr is NULL and year < 1980);
