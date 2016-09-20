@@ -4,4 +4,16 @@ select id, year from productions where attr is NULL and title ~ 'Harry Potter' a
 
 2.
 
-select id, character from roles where pid ~ 'Streep, Meryl' and id in (select id from productions where attr is NULL and year < 1980);
+select id, character from roles where pid = 'Streep, Meryl' and id in (select id from productions where attr is NULL and year < 1980);
+
+3.
+
+select id, character, billing from roles where pid = 'Eastwood, Clint' and id in (select id from directors where pid = 'Leone, Sergio (I)');
+
+4.
+
+select id from roles where pid = 'Nimoy, Leonard' and id in (select id from roles where pid = 'Hawking, Stephen');
+
+5.
+
+select id, pid, character from roles where pid in (select pid from roles where id = 'The Matrix (1999)') and pid in (select pid from roles where id = 'The Matrix Reloaded (2003)') and (id = 'The Matrix (1999)' or id = 'The Matrix Reloaded (2003)');
