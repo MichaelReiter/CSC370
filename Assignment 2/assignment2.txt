@@ -1,28 +1,59 @@
 1.
 
-select distinct country from locations natural join episodes where episodeof = '"Game of Thrones" (2011)' order by country;
+select distinct country from episodes natural join locations where episodeof = '"Game of Thrones" (2011)' order by country;
+     country      
+------------------
+ Canada
+ Croatia
+ Iceland
+ Malta
+ Morocco
+ Northern Ireland
+ Spain
+ UK
+ USA
 
 2.
 
-select title, year, rank from productions natural join directors natural join ratings where attr is NULL and pid = 'Hitchcock, Alfred (I)' and votes > 50000 order by rank;
+select title, year, rank from productions natural join directors natural join ratings where attr is NULL and pid = 'Hitchcock, Alfred (I)' and votes > 50000 order by rank desc, title desc;
+        title         | year | rank 
+----------------------+------+------
+ Rear Window          | 1954 |  8.5
+ Psycho               | 1960 |  8.5
+ Vertigo              | 1958 |  8.4
+ North by Northwest   | 1959 |  8.4
+ Rebecca              | 1940 |  8.2
+ Dial M for Murder    | 1954 |  8.2
+ Strangers on a Train | 1951 |  8.1
+ Rope                 | 1948 |    8
+ Notorious            | 1946 |    8
+ The Birds            | 1963 |  7.7
 
 3.
 
-select title, year, rank, paulchar, paulbilling, robchar, robbilling from
-productions natural join
-((select character as paulchar, billing as paulbilling from roles where pid = 'Newman, Paul (I)'),
-(select character as robchar, billing as robbilling from roles where pid = 'Redford, Robert (I)')
-where attr is NULL and not paulchar ~ 'Himself' and not robchar ~ 'Himself';
+with rob as (select * from roles where pid = 'Redford, Robert (I)'), paul as (select * from roles where pid = 'Newman, Paul (I)') select title, year, rank, paul.character as paulchar, paul.billing as paulbilling, rob.character as robchar, rob.billing as robbilling from ratings natural join productions natural join paul inner join rob on paul.id = rob.id where attr is NULL and not rob.character ~ 'Himself' and not paul.character ~ 'Himself';
+               title                | year | rank |    paulchar    | paulbilling |     robchar      | robbilling 
+------------------------------------+------+------+----------------+-------------+------------------+------------
+ Butch Cassidy and the Sundance Kid | 1969 |  8.1 | Butch Cassidy  |           1 | The Sundance Kid |          2
+ Mickybo and Me                     | 2004 |  7.3 | Butch Cassidy  |             | The Sundance Kid |           
+ The Sting                          | 1973 |  8.3 | Henry Gondorff |           1 | Johnny Hooker    |          2
 
 4.
 
-select * from table where something
 
 5.
 
-select lucas, kurosawa, relationship from links 
-
-(select id as lucas from productions where pid = 'Lucas, George (I)')
-(select id as kurosawa from productions where pid = 'Kurosawa, Akira')
-
-where attr is NULL
+with k as (select * from directors where pid = 'Kurosawa, Akira'), l as (select * from directors where pid = 'Lucas, George (I)') select id as lucas, idlinkedto as kurosawa, relationship from links where idlinkedto in (select id from k) and id in (select id from l);
+                        lucas                        |              kurosawa               | relationship 
+-----------------------------------------------------+-------------------------------------+--------------
+ Star Wars (1977)                                    | Dersu Uzala (1975)                  | references
+ Star Wars (1977)                                    | Kakushi-toride no san-akunin (1958) | references
+ Star Wars (1977)                                    | Shichinin no samurai (1954)         | references
+ Star Wars (1977)                                    | Yôjinbô (1961)                      | references
+ Star Wars: Episode II - Attack of the Clones (2002) | Kagemusha (1980)                    | references
+ Star Wars: Episode II - Attack of the Clones (2002) | Shichinin no samurai (1954)         | references
+ Star Wars: Episode III - Revenge of the Sith (2005) | Shichinin no samurai (1954)         | references
+ Star Wars: Episode I - The Phantom Menace (1999)    | Kagemusha (1980)                    | references
+ Star Wars: Episode I - The Phantom Menace (1999)    | Kakushi-toride no san-akunin (1958) | references
+ Star Wars: Episode I - The Phantom Menace (1999)    | Kumonosu-jô (1957)                  | references
+ Star Wars: Episode I - The Phantom Menace (1999)    | Shichinin no samurai (1954)         | references
