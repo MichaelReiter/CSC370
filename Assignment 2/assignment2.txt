@@ -1,0 +1,28 @@
+1.
+
+select distinct country from locations natural join episodes where episodeof = '"Game of Thrones" (2011)' order by country;
+
+2.
+
+select title, year, rank from productions natural join directors natural join ratings where attr is NULL and pid = 'Hitchcock, Alfred (I)' and votes > 50000 order by rank;
+
+3.
+
+select title, year, rank, paulchar, paulbilling, robchar, robbilling from
+productions natural join
+((select character as paulchar, billing as paulbilling from roles where pid = 'Newman, Paul (I)'),
+(select character as robchar, billing as robbilling from roles where pid = 'Redford, Robert (I)')
+where attr is NULL and not paulchar ~ 'Himself' and not robchar ~ 'Himself';
+
+4.
+
+select * from table where something
+
+5.
+
+select lucas, kurosawa, relationship from links 
+
+(select id as lucas from productions where pid = 'Lucas, George (I)')
+(select id as kurosawa from productions where pid = 'Kurosawa, Akira')
+
+where attr is NULL
