@@ -1,0 +1,53 @@
+1.
+
+select * from
+  (select episodeof,
+          avg(rank) as arank,
+          avg(votes) as avotes,
+          count(distinct epnumber) as cepisodes,
+          count(distinct season) as cseasons
+  from episodes, ratings group by episodeof) as tv
+where arank > 8.5 order by arank desc;
+
+2.
+
+select title, year, max(rank) as rank, votes from
+  (select title,
+       year,
+       rank,
+       votes
+  from ratings, productions
+  where votes >= 50000 and attr is NULL) as movies
+group by title, year, votes;
+
+3.
+
+select pid,
+       count(*),
+       avg(rank) as avg
+from ratings, roles
+where rank >= 8 and votes >= 50000
+group by pid
+order by avg;
+
+4.
+
+select pid,
+       id,
+       billing,
+       character
+from productions, roles
+where attr is NULL;
+
+5.
+
+select pid,
+       prop,
+       total,
+       goodones,
+       avggoodones,
+       rest,
+       avgrest,
+       avggoodones - avgrest as diff
+where attr is NULL and votes >= 50000 and rank > 8.4
+order by diff desc;
