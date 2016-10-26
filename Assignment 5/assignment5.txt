@@ -52,18 +52,6 @@ where votes >= 50000 and attr is NULL;
 
 3.
 
-select pid, count(pid) as count, avg(rank)
-from roles natural join ratings
-where rank >= 8 and votes >= 50000
-group by pid
-having count(pid) >= 10
-order by avg;
-
--- select pid, count(pid) as count, avg(rank)
--- from roles natural join ratings
--- where pid = 'Jackson, Samuel L.' and rank >= 8 and votes >= 50000
--- group by pid;
-
 with
   A as (
     select pid, id, rank
@@ -77,6 +65,15 @@ with
   )
   select * from B where count >= 10
   order by avg;
+
+          pid           | count |       avg        
+------------------------+-------+------------------
+ Tovey, Arthur          |    11 | 8.21818181818182
+ McGowan, Mickie        |    10 |             8.23
+ Lynn, Sherry (I)       |    12 | 8.25833333333333
+ Flowers, Bess          |    12 | 8.25833333333333
+ Ratzenberger, John (I) |    12 | 8.28333333333333
+ Oliveira, Joseph (III) |    10 |             8.38
 
 4.
 
@@ -114,14 +111,55 @@ with
 
 5.
 
-select pid,
-       prop,
-       total,
-       goodones,
-       avggoodones,
-       rest,
-       avgrest,
-       avggoodones - avgrest as diff
-from ___
-where attr is NULL and votes >= 50000 and rank > 8.4
-order by diff desc;
+with
+  A as (
+    select pid, id, rank
+    from productions natural join directors natural join ratings
+    where votes >= 40000 and attr is NULL
+  ),
+  B as (
+    select pid,
+           count(id) as goodones,
+           avg(rank) as avggoodones
+    from A
+    where rank > 8.4
+    group by pid
+  ),
+  C as (
+    select pid from B
+  ),
+  D as (
+    select pid,
+           count(id) as rest,
+           avg(rank) as avgrest
+    from A natural join C
+    where rank <= 8.4
+    group by pid
+  )
+  select pid,
+         to_char(goodones * 100.0 / (rest + goodones), '999G999G99D0%') as prop,
+         rest + goodones as total,
+         goodones,
+         to_char(avggoodones, 'FM9.0') as avggoodones,
+         rest,
+         to_char(avgrest, 'FM9.0') as avgrest,
+         to_char((avggoodones - avgrest), 'FM9.0')::float as diff
+  from B natural join D
+  where goodones + rest >= 8
+  order by diff desc, prop;
+
+          pid           |      prop      | total | goodones | avggoodones | rest | avgrest | diff 
+------------------------+----------------+-------+----------+-------------+------+---------+------
+ Coppola, Francis Ford  |          33.3% |     9 |        3 | 8.9         |    6 | 7.2     |  1.7
+ Zemeckis, Robert       |          13.3% |    15 |        2 | 8.7         |   13 | 7.1     |  1.6
+ Scott, Ridley          |          11.1% |    18 |        2 | 8.5         |   16 | 7.0     |  1.5
+ Singer, Bryan          |          12.5% |     8 |        1 | 8.6         |    7 | 7.1     |  1.5
+ Jackson, Peter (I)     |          27.3% |    11 |        3 | 8.8         |    8 | 7.4     |  1.4
+ Spielberg, Steven      |          12.0% |    25 |        3 | 8.7         |   22 | 7.4     |  1.2
+ Fincher, David         |          20.0% |    10 |        2 | 8.7         |    8 | 7.5     |  1.2
+ Nolan, Christopher (I) |          66.7% |     9 |        6 | 8.7         |    3 | 7.7     |    1
+ Scorsese, Martin (I)   |          13.3% |    15 |        2 | 8.6         |   13 | 7.7     |  0.9
+ Tarantino, Quentin     |          16.7% |    12 |        2 | 8.7         |   10 | 7.8     |  0.9
+ Miyazaki, Hayao        |          10.0% |    10 |        1 | 8.6         |    9 | 8.0     |  0.6
+ Hitchcock, Alfred (I)  |          14.3% |    14 |        2 | 8.5         |   12 | 8.0     |  0.5
+ Kubrick, Stanley       |          18.2% |    11 |        2 | 8.5         |    9 | 8.0     |  0.5
