@@ -39,33 +39,78 @@ order by arank desc;
 
 2.
 
-select title, year, max(rank) as rank, votes from
-  (select title,
-          year,
-          rank,
-          votes
-  from ratings natural join productions
-  where votes >= 50000 and attr is NULL) as movies
-group by title, year, votes;
+select title, year, rank, votes from
+(select max(rank) as rank
+from ratings natural join productions
+where votes >= 50000 and attr is NULL) as movies
+natural join productions natural join ratings
+where votes >= 50000 and attr is NULL;
+
+          title           | year | rank |  votes  
+--------------------------+------+------+---------
+ The Shawshank Redemption | 1994 |  9.3 | 1698604
 
 3.
 
-select pid,
-       count(*),
-       avg(rank) as avg
-from ratings natural join roles
+select pid, count(pid) as count, avg(rank)
+from roles natural join ratings
 where rank >= 8 and votes >= 50000
 group by pid
+having count(pid) >= 10
 order by avg;
+
+-- select pid, count(pid) as count, avg(rank)
+-- from roles natural join ratings
+-- where pid = 'Jackson, Samuel L.' and rank >= 8 and votes >= 50000
+-- group by pid;
+
+with
+  A as (
+    select pid, id, rank
+    from productions natural join ratings natural join roles
+    where attr is NULL and votes >= 50000 and rank >= 8
+  ),
+  B as (
+    select pid, count(id) as count, avg(rank) as avg
+    from A
+    group by pid
+  )
+  select * from B where count >= 10
+  order by avg;
 
 4.
 
-select pid,
-       id,
-       billing,
-       character
-from productions natural join roles
-where attr is NULL;
+with
+  A as (
+    select pid, count(pid) as count
+    from roles natural join ratings natural join productions
+    where votes >= 50000 and rank > 8 and attr is NULL
+    group by pid
+  ),
+  B as (
+    select max(count) as count from A
+  ),
+  C as (
+    select pid, id, billing, character
+    from roles natural join ratings
+    where votes >= 50000 and rank > 8
+  )
+  select pid, id, billing, character from
+  A natural join B natural join C
+  order by id;
+
+          pid           |                          id                           | billing |        character         
+------------------------+-------------------------------------------------------+---------+--------------------------
+ Ratzenberger, John (I) | Finding Nemo (2003)                                   |      24 | Fish School
+ Ratzenberger, John (I) | Gandhi (1982)                                         |     124 | American Lieutenant
+ Ratzenberger, John (I) | Inside Out (2015/I)                                   |      17 | Fritz
+ Ratzenberger, John (I) | Monsters, Inc. (2001)                                 |       8 | The Abominable Snowman
+ Ratzenberger, John (I) | Sen to Chihiro no kamikakushi (2001)                  |      56 | Assistant Manager
+ Ratzenberger, John (I) | Star Wars: Episode V - The Empire Strikes Back (1980) |      31 | Rebel Force Major Derlin
+ Ratzenberger, John (I) | Toy Story (1995)                                      |       6 | Hamm
+ Ratzenberger, John (I) | Toy Story 3 (2010)                                    |       8 | Hamm
+ Ratzenberger, John (I) | Up (2009)                                             |       7 | Construction Foreman Tom
+ Ratzenberger, John (I) | WALL·E (2008)                                         |       6 | John
 
 5.
 
