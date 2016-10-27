@@ -39,12 +39,17 @@ order by arank desc;
 
 2.
 
-select title, year, rank, votes from
-(select max(rank) as rank
-from ratings natural join productions
-where votes >= 50000 and attr is NULL) as movies
-natural join productions natural join ratings
-where votes >= 50000 and attr is NULL;
+with A as (
+  select *
+  from ratings natural join productions
+  where votes >= 50000 and attr is NULL
+),
+C as (
+  select max(rank) as rank
+  from A
+)
+select title, year, rank, votes
+from A natural join C;
 
           title           | year | rank |  votes  
 --------------------------+------+------+---------
