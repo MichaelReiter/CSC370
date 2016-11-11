@@ -1,0 +1,66 @@
+DROP TABLE IF EXISTS parts;
+DROP TABLE IF EXISTS partshistory;
+
+CREATE TABLE parts (
+  pid integer,
+  pname varchar(40),
+  color varchar(20)
+);
+
+CREATE TABLE partshistory (
+  pid integer,
+  pname varchar(40),
+  color varchar(20),
+  operation char,
+  opwhen timestamp,
+  opuser char(20)
+);
+
+INSERT INTO Parts VALUES (6, 'Anti-Gravity Turbine Generator', 'Cyan');
+INSERT INTO Parts VALUES (7, 'Anti-Gravity Turbine Generator', 'Magenta');
+INSERT INTO Parts VALUES (8, 'Fire Hydrant Cap', 'Red');
+INSERT INTO Parts VALUES (9, '7 Segment Display', 'Green');
+INSERT INTO Parts VALUES (10, 'SQL Queries', 'Green');
+
+CREATE FUNCTION update_parts_history() RETURNS TRIGGER AS $$
+BEGIN 
+  IF (TG_OP = 'UPDATE') THEN 
+    INSERT INTO partshistory SELECT OLD.*, 'U', now(), user;
+    RETURN NEW;
+  ELSIF (TG_OP = 'DELETE') THEN 
+    INSERT INTO partshistory SELECT OLD.*, 'D', now(), user;
+    RETURN OLD;
+  ELSIF (TG_OP = 'INSERT') THEN
+    INSERT INTO partshistory SELECT NEW.*, 'I', now(), user;
+    RETURN NEW;
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER parts_history_trigger
+BEFORE UPDATE OR DELETE OR INSERT 
+ON parts
+FOR EACH ROW EXECUTE PROCEDURE update_parts_history();
+
+-- \d parts output:
+mreiter=> \d parts
+            Table "public.parts"
+ Column |         Type          | Modifiers 
+--------+-----------------------+-----------
+ pid    | integer               | 
+ pname  | character varying(40) | 
+ color  | character varying(20) | 
+Triggers:
+    parts_history_trigger BEFORE INSERT OR DELETE OR UPDATE ON parts FOR EACH ROW EXECUTE PROCEDURE update_parts_history()
+
+-- \d partshistory output:
+mreiter=> \d partshistory
+             Table "public.partshistory"
+  Column   |            Type             | Modifiers 
+-----------+-----------------------------+-----------
+ pid       | integer                     | 
+ pname     | character varying(40)       | 
+ color     | character varying(20)       | 
+ operation | character(1)                | 
+ opwhen    | timestamp without time zone | 
+ opuser    | character(20)               | 
