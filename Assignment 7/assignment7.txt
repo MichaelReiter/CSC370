@@ -1,0 +1,30 @@
+CREATE FUNCTION mreiter_myFunc(pid varchar)
+RETURNS table(id varchar, year integer, rank double precision, votes integer)
+AS $$
+  SELECT productions.id, year, rank, votes
+  FROM directors NATURAL JOIN productions LEFT JOIN ratings
+  ON (productions.id = ratings.id)
+  WHERE attr is NULL and pid = mreiter_myFunc.pid
+  ORDER BY year;
+$$ LANGUAGE SQL;
+
+SELECT * FROM mreiter_myFunc('Nolan, Christopher (I)');
+
+-- Output:
+
+              id               | year | rank |  votes  
+-------------------------------+------+------+---------
+ Doodlebug (1997)              | 1997 |  7.1 |   11415
+ Following (1998)              | 1998 |  7.6 |   66121
+ Memento (2000)                | 2000 |  8.5 |  849849
+ Insomnia (2002)               | 2002 |  7.2 |  219782
+ Batman Begins (2005)          | 2005 |  8.3 |  986936
+ The Exec (2006) {{SUSPENDED}} | 2006 |      |        
+ The Prestige (2006)           | 2006 |  8.5 |  849119
+ The Dark Knight (2008)        | 2008 |    9 | 1685825
+ Inception (2010)              | 2010 |  8.8 | 1476746
+ The Dark Knight Rises (2012)  | 2012 |  8.5 | 1151061
+ Interstellar (2014)           | 2014 |  8.6 |  937348
+ Quay (2015)                   | 2015 |    8 |     357
+ Dunkirk (2017)                | 2017 |      |        
+(13 rows)
